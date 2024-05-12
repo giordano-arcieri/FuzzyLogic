@@ -18,34 +18,35 @@ def DefuzzyfyRisk(risk: str, output_var_sets: FuzzySetsDict) -> float:
 
 
 def plotFuzzySets(fuzzySetsDict):
-    # var: str, sets: list[FuzzySet]
-    prev:str = ""
-    plt.plot(fuzzySetsDict["Age=Young"].x, fuzzySetsDict["Age=Young"].y, label=f"Ahhh")
-    plt.title('Title')
-    plt.xlabel('x')
-    plt.ylabel('y')
-    plt.xlim(-40, 40)  # Set the y-axis limit
-    plt.ylim(0, 1)  # Set the x-axis limit
-
-    plt.grid(True)
-    plt.savefig('Graphs/' + prev + '.png')
     
-    return
+    prev:str = ""
+    
+    # var: str, sets: FuzzySet
     for var, sets in fuzzySetsDict.items():
-        if(prev == ""):
-            prev = var.split('=')[0]
-        if(var.split('=')[0] == prev):
-            plt.plot(sets.x, sets.y, label=f"{sets.label}")
-        else:
+        current_group = var.split('=')[0]
+        if prev != "" and current_group != prev:
+            # Save and close the figure for the previous group
             plt.title(f'Fuzzy Sets for {prev}')
-            plt.figure(figsize=(10, 6))
+            plt.legend()
+            plt.savefig('Graphs/' + prev + '.png')
+            plt.close()
+
+            # Start a new figure for the new group
+            plt.figure(figsize=(10, 5))
             plt.xlabel('x')
             plt.ylabel('y')
             plt.grid(True)
-            plt.savefig('Graphs/' + prev + '.png')
-            prev = var.split('=')[0]
-            plt.plot(sets.x, sets.y, label=f"{sets.label}")
 
+        # Plot current set
+        plt.plot(sets.x, sets.y, label=f"{sets.label}")
+        prev = current_group
+
+    # Handle the last group after exiting the loop
+    if prev != "":
+        plt.title(f'Fuzzy Sets for {prev}')
+        plt.legend()
+        plt.savefig('Graphs/' + prev + '.png')
+        plt.close()
             
 
     return 
@@ -77,12 +78,13 @@ def plotFuzzySets(fuzzySetsDict):
 
 def main():
     # Initialize systems and read data
-    input_var_sets = readFuzzySetsFile('InputVarSets.txt')
-    output_var_sets = readFuzzySetsFile('Risks.txt')
+    input_var_sets = readFuzzySetsFile('InputTextFiles/InputVarSets.txt')
+    output_var_sets = readFuzzySetsFile('InputTextFiles/Risks.txt')
     rules = readRulesFile()
     applications: list[Application] = readApplicationsFile()
     
     plotFuzzySets(input_var_sets)
+    plotFuzzySets(output_var_sets)
         
     
     
