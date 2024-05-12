@@ -9,7 +9,7 @@ def readFuzzySetsFile(fleName):
     This function reads a file containing fuzzy set descriptions
     and returns a dictionary with all of them
     """
-    fuzzySetsDict = FuzzySetsDict() # dictionary to be returned
+    fuzzySetsDict = FuzzySetsDict() # dictionary to be returned 
     inputFile = open(fleName, 'r')
     line = inputFile.readline()
     while line != '':
@@ -37,7 +37,7 @@ def readFuzzySetsFile(fleName):
     return fuzzySetsDict
 
 def readRulesFile():
-    inputFile = open('Files/Rules.txt', 'r')
+    inputFile = open('Rules.txt', 'r')
     rules = RuleList()
     line = inputFile.readline()
     while line != '':
@@ -56,7 +56,7 @@ def readRulesFile():
     return rules
 
 def readApplicationsFile():
-    inputFile = open('Files/Applications.txt', 'r')
+    inputFile = open('Applications.txt', 'r')
     applicationList = []
     line = inputFile.readline()
     while line != '':
