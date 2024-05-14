@@ -21,7 +21,7 @@ def readFuzzySetsFile(fleName):
         fuzzySet.label=var_label[1]        
 
         xmin = int(elementsList[1])
-        xmax = int(elementsList[2])
+        xmax = int(elementsList[2]) + 1
         a = int(elementsList[3])
         b = int(elementsList[4])
         c = int(elementsList[5])
