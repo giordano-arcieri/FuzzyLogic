@@ -69,8 +69,31 @@ def ApplyRules(fuzzy_nums: dict, rules: RuleList) -> dict:
 
 
 def DefuzzyfyRisk(risks: dict, output_var_sets: FuzzySetsDict) -> float:
+    x_combined = np.linspace(0, 100, 1000)  # Adjust range if needed
+    aggregated = np.zeros_like(x_combined)
+
+    # Interpolate and aggregate membership functions
+    for risk_level, fuzzy_value in risks.items():
+        fuzzy_set = output_var_sets[f"Risk={risk_level}"]
+        interpolated_y = skf.interp_membership(fuzzy_set.x, fuzzy_set.y, x_combined) * fuzzy_value
+        aggregated = np.fmax(aggregated, interpolated_y)
+
+    # Calculate the centroid (center of gravity) using skfuzzy
+    centroid = skf.defuzz(x_combined, aggregated, 'centroid')
+    return centroid
+
+    # Find Centroid
+    risk_low = np.fmin(risks["LowR"], output_var_sets["Risk=LowR"].y)
+    risk_medium = np.fmin(risks["MediumR"], output_var_sets["Risk=MediumR"].y)
+    risk_high = np.fmin(risks["LowR"], output_var_sets["Risk=HighR"].y)
+
+    # Aggregate all three output membership functions together
+    aggregated = np.fmax(risk_low, np.fmax(risk_medium, risk_high))
+
+    # Calculate defuzzified result
+    final_risk = skf.defuzz(output_var_sets['Risk=HighR'].x, aggregated, 'centroid')
     
-    return 0
+    return final_risk
 
 
 def plotFuzzySets(fuzzySetsDict: FuzzySetsDict):
@@ -119,15 +142,19 @@ def main():
         for app in applications:
             # # Print application
             # app.printApplication()
-            # Fuzzyfy application
+            
+            # Fuzzyfy application   
             fuzzy_nums: dict = FuzzyfyApplication(app, input_var_sets)
+            
             # Apply rules
             risks: dict = ApplyRules(fuzzy_nums, rules)
-            print(risks)
+            
             # Defuzzyfy application
             risk_value: float = DefuzzyfyRisk(risks, output_var_sets)
-            # # Write results to file
-            # file.write(f"App ID: {app.appId}, Risk Level: {risk_value}\n")
+            print(app.appId, risks, "| RISK:", risk_value)
+
+            # Write results to file
+            #file.write(f"App ID: {app.appId} | {app.data[0]}{app.data[1]}{app.data[2]}{app.data[3]}{app.data[4]}{app.data[5]} |  Risk Level: {risk_value}\n")
 
 
 if __name__ == "__main__":
