@@ -22,17 +22,54 @@ def FuzzyfyApplication(app: Application, input_var_sets: FuzzySetsDict) -> dict:
     return fuzzified_app
 
 
-def ApplyRules(fuzzy_set: FuzzySet, rules: RuleList) -> str:
+def ApplyRules(fuzzy_nums: dict, rules: RuleList) -> dict:
     # Rule ruleName = rule01, consequent = Risk=HighR, antecedent = [IncomeLevel=Hig, Assets=Abundant, Amount=Small]
-    
-    
+
+    # This will be the fuzzy Low Risk number that will than have to be defuzzified
+    LowR: float = 0.0
+    # This will be the fuzzy Medium Risk number that will than have to be defuzzified
+    MediumR: float = 0.0
+    # This will be the fuzzy High Risk number that will than have to be defuzzified
+    HighR: float = 0.0
+
     for rule in rules:
-        print(rule.ruleName, rule.consequent, rule.antecedent)
+        # For each rule:
+        # I will count up the min() of all antecedent of that rule and update the risk consequent if it is a new max
+        if (rule.consequent.split('=')[1] == "LowR"):
+            # Since we are doing AND we need to keep track of min. We initialize to 1 since nothing will be ever bigger
+            min: float = 1
+            for antecedent_var in rule.antecedent:
+                attribute = antecedent_var.split('=')[0]
+                term = antecedent_var.split('=')[1]
+                if (fuzzy_nums[attribute][term] < min):
+                    min = fuzzy_nums[attribute][term]
+            # Since we are grabbing the max I will only updated it if it is bigger
+            if (LowR < min):
+                LowR = min
+        if (rule.consequent.split('=')[1] == "MediumR"):
+            min: float = 1
+            for antecedent_var in rule.antecedent:
+                attribute = antecedent_var.split('=')[0]
+                term = antecedent_var.split('=')[1]
+                if (fuzzy_nums[attribute][term] < min):
+                    min = fuzzy_nums[attribute][term]
+            if (MediumR < min):
+                MediumR = min
+        if (rule.consequent.split('=')[1] == "HighR"):
+            min: float = 1
+            for antecedent_var in rule.antecedent:
+                attribute = antecedent_var.split('=')[0]
+                term = antecedent_var.split('=')[1]
+                if (fuzzy_nums[attribute][term] < min):
+                    min = fuzzy_nums[attribute][term]
+            if (HighR < min):
+                HighR = min
+
+    return {"HighR": HighR, "MediumR": MediumR, "LowR": LowR}
+
+
+def DefuzzyfyRisk(risks: dict, output_var_sets: FuzzySetsDict) -> float:
     
-    return "HighR"
-
-
-def DefuzzyfyRisk(risk: str, output_var_sets: FuzzySetsDict) -> float:
     return 0
 
 
@@ -51,7 +88,6 @@ def plotFuzzySets(fuzzySetsDict: FuzzySetsDict):
             plt.close()
 
             # Start a new figure for the new group
-            plt.figure(figsize=(10, 5))
             plt.xlabel('x')
             plt.ylabel('y')
             plt.grid(True)
@@ -81,15 +117,15 @@ def main():
 
     with open('Results.txt', 'w') as file:
         for app in applications:
-            # Print application
-            app.printApplication()
+            # # Print application
+            # app.printApplication()
             # Fuzzyfy application
             fuzzy_nums: dict = FuzzyfyApplication(app, input_var_sets)
             # Apply rules
-            risk: str = ApplyRules(fuzzy_nums, rules)
-            return
-            # # Defuzzyfy application
-            # risk_value: float = DefuzzyfyRisk(risk, output_var_sets)
+            risks: dict = ApplyRules(fuzzy_nums, rules)
+            print(risks)
+            # Defuzzyfy application
+            risk_value: float = DefuzzyfyRisk(risks, output_var_sets)
             # # Write results to file
             # file.write(f"App ID: {app.appId}, Risk Level: {risk_value}\n")
 
